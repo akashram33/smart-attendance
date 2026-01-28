@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Attendance System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>📷 Attendance</h1>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-section="dashboard">
+                    📊 Dashboard
+                </button>
+                <button class="nav-btn" data-section="attendance">
+                    ✅ Mark Attendance
+                </button>
+                <button class="nav-btn" data-section="persons">
+                    👥 Persons
+                </button>
+                <button class="nav-btn" data-section="logs">
+                    📋 Attendance Logs
+                </button>
+                <button class="nav-btn" data-section="datasets">
+                    🗃️ Datasets
+                </button>
+                <button class="nav-btn" data-section="settings">
+                    ⚙️ Settings
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <h2 id="section-title">Dashboard</h2>
+                <div class="header-info">
+                    <span id="current-time"></span>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Total Persons</div>
+                            <div class="stat-value" id="total-persons">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Present Today</div>
+                            <div class="stat-value" id="present-today">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🤖</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Model Status</div>
+                            <div class="stat-value" id="model-status">Not Trained</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📷</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Faces Encoded</div>
+                            <div class="stat-value" id="faces-encoded">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="btn btn-primary" onclick="navigateTo('attendance')">
+                        Start Attendance 🎥
+                    </button>
+                    <button class="btn btn-secondary" onclick="navigateTo('persons')">
+                        Add New Person ➕
+                    </button>
+                    <button class="btn btn-secondary" onclick="trainModel()">
+                        Train Model 🤖
+                    </button>
+                </div>
+            </section>
+
+            <!-- Mark Attendance Section -->
+            <section id="attendance" class="content-section">
+                <div class="attendance-container">
+                    <div class="camera-wrapper">
+                        <video id="camera-feed" autoplay></video>
+                        <canvas id="camera-canvas" style="display: none;"></canvas>
+                        <button class="btn btn-primary capture-btn" onclick="captureAndMarkAttendance()">
+                            📸 Capture Face
+                        </button>
+                    </div>
+                    <div class="attendance-info">
+                        <div class="info-card">
+                            <h3>Last Recognized:</h3>
+                            <p id="last-person">-</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>Time:</h3>
+                            <p id="current-attendance-time">-</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>Status:</h3>
+                            <p id="attendance-status">Ready</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Persons Section -->
+            <section id="persons" class="content-section">
+                <div class="persons-header">
+                    <h3>Registered Persons</h3>
+                    <button class="btn btn-primary" onclick="openAddPersonModal()">➕ Add Person</button>
+                </div>
+                <div class="persons-grid" id="persons-grid"></div>
+            </section>
+
+            <!-- Attendance Logs Section -->
+            <section id="logs" class="content-section">
+                <div class="logs-header">
+                    <h3>Attendance Logs</h3>
+                    <input type="date" id="log-date" onchange="loadAttendanceLogs()">
+                </div>
+                <div class="logs-table-wrapper">
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Person Name</th>
+                                <th>Check-in Time</th>
+                                <th>Check-out Time</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Datasets Section -->
+            <section id="datasets" class="content-section">
+                <div class="datasets-header">
+                    <h3>Dataset Management</h3>
+                </div>
+                <div class="datasets-tabs">
+                    <button class="tab-btn active" onclick="switchTab('available-datasets')">Available</button>
+                    <button class="tab-btn" onclick="switchTab('upload-dataset')">Upload</button>
+                </div>
+
+                <!-- Available Datasets -->
+                <div id="available-datasets" class="tab-content active">
+                    <div class="datasets-grid" id="datasets-grid"></div>
+                </div>
+
+                <!-- Upload Dataset -->
+                <div id="upload-dataset" class="tab-content">
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">📁</div>
+                        <p>Drag and drop your dataset ZIP file here</p>
+                        <p style="font-size: 12px; color: #666;">or</p>
+                        <input type="file" id="dataset-file" accept=".zip" style="display: none;" onchange="uploadDataset()">
+                        <button class="btn btn-secondary" onclick="document.getElementById('dataset-file').click()">
+                            Select File
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="content-section">
+                <div class="settings-container">
+                    <h3>System Settings</h3>
+                    <div class="settings-group">
+                        <label>Application Version:</label>
+                        <p>1.0.0</p>
+                    </div>
+                    <div class="settings-group">
+                        <label>Model Configuration:</label>
+                        <div class="settings-items">
+                            <p>Face Detection Tolerance: 0.6</p>
+                            <p>Min Faces for Recognition: 1</p>
+                            <p>Min Confidence: 0.5</p>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <label>About:</label>
+                        <p>Smart Attendance System v1.0.0</p>
+                        <p>Powered by Face Recognition ML</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Person Modal -->
+    <div id="add-person-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Person</h3>
+                <button class="close-btn" onclick="closeModal('add-person-modal')">&times;</button>
+            </div>
+            <form onsubmit="addPerson(event)">
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="person-name" required placeholder="Enter person name">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Create Person</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('add-person-modal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Upload Modal -->
+    <div id="upload-images-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Upload Images for <span id="modal-person-name"></span></h3>
+                <button class="close-btn" onclick="closeModal('upload-images-modal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Select Images (5-10 recommended):</label>
+                <input type="file" id="person-images" multiple accept="image/*" onchange="displaySelectedImages()">
+                <div id="preview-images" class="preview-images"></div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="uploadPersonImages()">Upload Images</button>
+                <button class="btn btn-secondary" onclick="closeModal('upload-images-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
